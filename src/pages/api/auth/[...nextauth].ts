@@ -9,4 +9,28 @@ export default NextAuth({
       scope: 'read:user'
     }),
   ],
+  callbacks: {
+    async session(session, profile) {
+      try {
+        return {
+          ...session,
+          id: profile.sub
+        }
+      } catch {
+        return {
+          ...session,
+          id: null
+        }
+      }
+    },
+    async signIn(user, account, profile) {
+      try {
+        return true
+      } catch (err) {
+        console.log('ERRO NO LOGIN')
+        console.log(err)
+        return false
+      }
+    }
+  }
 })
