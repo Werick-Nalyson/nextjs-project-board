@@ -2,7 +2,7 @@ import Head from 'next/head';
 import { useState, FormEvent } from 'react';
 import { GetServerSideProps } from 'next';
 import { getSession } from 'next-auth/client';
-import { FiPlus, FiCalendar, FiEdit2, FiTrash, FiClock } from 'react-icons/fi'
+import { FiPlus, FiCalendar, FiEdit2, FiTrash, FiClock, FiX } from 'react-icons/fi'
 import { format } from 'date-fns'
 
 import styles from './styles.module.scss'
@@ -33,11 +33,32 @@ export default function Board({ user, data }: IBoardProps){
   const [textInput, setTextInput] = useState('')
   const [taskList, setTaskList] = useState<ITaskList[]>(JSON.parse(data))
 
+  const [taskEdit, setTaskEdit] = useState<ITaskList | null>(null)
+
   async function handleAddTask (e: FormEvent) {
     e.preventDefault()
 
     if(textInput === ''){
       alert('Preencha alguma tarefa!')
+      return;
+    }
+
+    if(taskEdit){
+      await firebase.firestore().collection('tasks')
+      .doc(taskEdit.id)
+      .update({
+        taskName: textInput
+      })
+      .then(()=>{
+        let data = taskList;
+        let taskIndex = taskList.findIndex(item => item.id === taskEdit.id);
+        data[taskIndex].taskName = textInput
+
+        setTaskList(data);
+        setTaskEdit(null);
+        setTextInput('');
+
+      })
       return;
     }
 
@@ -68,12 +89,50 @@ export default function Board({ user, data }: IBoardProps){
     })
   }
 
+  async function handleDelete(id: string){
+    setTaskEdit(null);
+    setTextInput('');
+    
+    await firebase.firestore().collection('tasks').doc(id)
+    .delete()
+    .then(()=>{
+      console.log('DELETADO COM SUCESSO!');
+      let taskDeleted = taskList.filter( item => {
+        return (item.id !== id)
+      });
+
+      setTaskList(taskDeleted);
+    })
+    .catch((err)=>{
+      console.log(err);
+    })
+  }
+
+  function handleEditTask(task: ITaskList){
+    setTaskEdit(task);
+    setTextInput(task.taskName);
+  }
+
+  function handleCancelEdit(){
+    setTextInput('');
+    setTaskEdit(null);
+  }
+
   return(
     <>
     <Head>
     	<title>Minhas tarefas - Board</title>
     </Head>
+
     <main className={styles.container}>
+      {taskEdit && (
+          <span className={styles.warnText}>
+            <button onClick={ handleCancelEdit }>
+            <FiX size={30} color="#FF3636" />
+            </button>
+            Você está editando uma tarefa!
+          </span>
+        )}
       <form onSubmit={handleAddTask}>
         <input 
           type="text" 
@@ -100,13 +159,13 @@ export default function Board({ user, data }: IBoardProps){
               <FiCalendar size={20} color="#FFB800"/>
               <time>{task.createdAtFormated}</time>
             </div>
-            <button>
+            <button onClick={() => handleEditTask(task)}>
               <FiEdit2 size={20} color="#FFF" />
               <span>Editar</span>
             </button>
           </div>
 
-          <button>
+          <button onClick={() => handleDelete(task.id)}>
             <FiTrash size={20} color="#FF3636" />
             <span>Excluir</span>
           </button>
