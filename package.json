@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@paypal/react-paypal-js": "^7.3.2",
     "date-fns": "^2.23.0",
     "firebase": "^8.8.1",
     "next": "11.1.0",
