@@ -1,24 +1,23 @@
-
-.contentContainer{
+.contentContainer {
   max-width: 1120px;
   margin: 0 auto;
   padding: 0 2rem;
+  min-height: calc(100vh - 6rem);
 
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
 
-  img{
+  img {
     margin-top: 2rem;
   }
-
 }
 
-.callToAction{
+.callToAction {
   max-width: 700px;
 
-  h1{
+  h1 {
     font-size: 1.8rem;
     margin-top: 1rem;
     font-weight: bold;
@@ -26,27 +25,26 @@
     color: #141a29;
   }
 
-  p{
+  p {
     margin-top: 1rem;
     font-size: 1.5rem;
     text-align: center;
     color: #141a29;
 
-    span{
+    span {
       color: #04dd75;
       font-weight: bold;
     }
   }
-
 }
 
-.donaters{
+.donaters {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
   margin-bottom: 1.5rem;
 
-  img{
+  img {
     width: 65px;
     height: 65px;
     border-radius: 50%;
@@ -58,7 +56,7 @@
     }
   }
 
-  img:hover{
+  img:hover {
     transform: scale(1.2);
   }
 }
