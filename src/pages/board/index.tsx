@@ -3,7 +3,8 @@ import { useState, FormEvent } from 'react';
 import { GetServerSideProps } from 'next';
 import { getSession } from 'next-auth/client';
 import { FiPlus, FiCalendar, FiEdit2, FiTrash, FiClock, FiX } from 'react-icons/fi'
-import { format } from 'date-fns'
+import { format, formatDistance } from 'date-fns'
+import { ptBR } from 'date-fns/locale';
 
 import styles from './styles.module.scss'
 import { SupportButton } from '../../components/SupportButton';
@@ -22,10 +23,12 @@ interface ITaskList {
 
 
 interface IBoardProps {
-  user: {
+  user:{
     id: string;
     name: string;
-  },
+    vip: boolean;
+    lastDonate: string | Date;
+  }
   data: string;
 }
 
@@ -150,19 +153,27 @@ export default function Board({ user, data }: IBoardProps){
     <section>
     {taskList.map( task => (
       <article key={task.id} className={styles.taskList}>
+        {user.vip ? (
         <Link href={`/board/${task.id}`}>
+          <a>
             <p>{task.taskName}</p>
+          </a>
         </Link>
+        ): (
+          <p>{task.taskName}</p>
+        )}
         <div className={styles.actions}>
           <div>
             <div>
               <FiCalendar size={20} color="#FFB800"/>
               <time>{task.createdAtFormated}</time>
             </div>
-            <button onClick={() => handleEditTask(task)}>
+            {user.vip && (
+            <button onClick={ () => handleEditTask(task) } >
               <FiEdit2 size={20} color="#FFF" />
               <span>Editar</span>
             </button>
+            ) }
           </div>
 
           <button onClick={() => handleDelete(task.id)}>
@@ -176,15 +187,17 @@ export default function Board({ user, data }: IBoardProps){
 
     </main>
 
+    {user.vip && (
     <div className={styles.vipContainer}>
       <h3>Obrigado por apoiar esse projeto.</h3>
       <div>
         <FiClock size={28} color="#FFF" />
         <time>
-          Última doação foi a 3 dias.
+          Última doação foi {formatDistance(new Date(user.lastDonate), new Date(), { locale: ptBR} )}
         </time>
       </div>
     </div>
+    )}
 
     <SupportButton/>
 
@@ -195,7 +208,7 @@ export default function Board({ user, data }: IBoardProps){
 export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   const session = await getSession({ req })
 
-  if (!session.id) {
+  if (!session?.id) {
     return {
       redirect: {
         destination: '/',
@@ -218,7 +231,9 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
 
   const user = {
     id: session?.id,
-    name: session?.user.name
+    name: session?.user.name,
+    vip: session?.vip,
+    lastDonate: session?.lastDonate
   }
 
   return {
