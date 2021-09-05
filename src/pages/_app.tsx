@@ -6,7 +6,7 @@ import { Header } from '../components/Header';
 import '../styles/global.scss';
 
 const paypalOptions = {
-  "client-id": process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID,
+  "client-id": process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID_PROD || process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID_DEV,
   currency: "BRL",
   intent: "capture"
 }
